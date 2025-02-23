@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:social_media_app/api/app_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,6 +10,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> posts = [];
+  final ApiService apiService = ApiService();
 
   @override
   void initState() {
@@ -18,22 +19,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> fetchPosts() async {
-    try {
-      var response = await Dio().get('https://jsonplaceholder.typicode.com/photos');
-      if (response.statusCode == 200) {
-        print("Posts fetched successfully: ${response.data.length} items");
-        setState(() {
-          posts = response.data.take(15).toList(); // Limit to 15 posts
-        });
-      } else {
-        print("Error: Received status code ${response.statusCode}");
-      }
-    } catch (e) {
-      print('Error fetching posts: $e');
-      setState(() {
-        posts = [];
-      });
-    }
+    List<dynamic> fetchedPosts = await apiService.fetchPosts();
+    setState(() {
+      posts = fetchedPosts;
+    });
   }
 
   @override
@@ -46,9 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(onPressed: () {
-
-          }, icon: const Icon(Icons.notifications)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
         ],
       ),
       body: Column(
@@ -67,15 +54,20 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
-          // User Posts Section
+          const SizedBox(height: 10),
           Expanded(
             child: posts.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     itemCount: posts.length,
                     itemBuilder: (context, index) {
-                      return _buildPostCard(posts[index]);
+                      return GestureDetector(
+                        onTap: () {
+                          // Get.to(() => PostScreen(post: posts[index]));
+                          print("oprned the card");
+                        },
+                        child: _buildPostCard(posts[index]),
+                      );
                     },
                   ),
           ),
@@ -103,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPostCard(dynamic post) {
     return Card(
-      margin: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,15 +105,25 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Colors.blue,
               child: Icon(Icons.person, color: Colors.white),
             ),
-            title: Text('User ${post['albumId']}'), // Using albumId as user reference
+            title: Text('User ${post['albumId']}'),
             subtitle: const Text('2 hours ago'),
             trailing: const Icon(Icons.more_vert),
           ),
           Image.network(
-            post['url'], // Fetching post image
+            post['url'],
             height: 250,
             width: double.infinity,
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 250,
+                width: double.infinity,
+                color: Colors.grey[300], // Placeholder background
+                child: const Center(
+                  child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                ),
+              );
+            },
           ),
           Padding(
             padding: const EdgeInsets.all(10),
