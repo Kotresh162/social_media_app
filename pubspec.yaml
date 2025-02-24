@@ -9,8 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    assets:
-    - assets/placeholder.jpg
 
 
   cupertino_icons: ^1.0.8

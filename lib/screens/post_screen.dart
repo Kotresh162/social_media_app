@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:social_media_app/api/app_service.dart';
+import 'package:social_media_app/models/comment_model.dart';
 import 'package:social_media_app/models/post_model.dart';
+import 'package:social_media_app/screens/user_screen.dart';
 
 class PostScreen extends StatefulWidget {
   final PostModel post;
@@ -33,26 +36,31 @@ class _PostScreenState extends State<PostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Post Details")),
+      appBar: AppBar(title: const Text("Post Details")),
       body: Column(
         children: [
-          Container(
-            height: 250,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(
-                  widget.post.imageUrl,
-                  // Placeholder or fallback image if URL fails
-                  scale: 1.0,
+          GestureDetector(
+            onTap: () {
+              Get.to(() => UserScreen(id: widget.post.id));
+              print("card printed");
+            },
+            child: Container(
+              height: 500,
+              width: double.infinity,
+              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color.fromARGB(255, 111, 110, 110), width: 1),
+                image: DecorationImage(
+                  image: NetworkImage(widget.post.imageUrl),
+                  fit: BoxFit.cover,
+                  onError: (_, __) => const Icon(Icons.image, color: Color.fromARGB(255, 28, 28, 28)),
                 ),
-                fit: BoxFit.cover,
-                onError: (_, __) => const AssetImage('assets/placeholder.jpg'),
               ),
+              child: widget.post.imageUrl.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : null,
             ),
-            child: widget.post.imageUrl.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : null,
           ),
           const SizedBox(height: 10),
           Padding(

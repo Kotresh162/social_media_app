@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
+import 'package:social_media_app/models/comment_model.dart';
 import 'package:social_media_app/models/post_model.dart';
+import 'package:social_media_app/models/user_model.dart';
 
 class ApiService {
   final Dio _dio = Dio();
@@ -18,6 +21,20 @@ class ApiService {
       print('Error fetching posts: $e');
     }
     return [];
+  }
+  
+  Future<UserModel> fetchUserDetails(int id) async {
+    try {
+      final response = await _dio.get('https://jsonplaceholder.typicode.com/users/$id');
+
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
+        throw Exception('Failed to load user details');
+      }
+    } catch (e) {
+      throw Exception('Error fetching user details: $e');
+    }
   }
 
   Future<List<CommentModel>> fetchComments(int albumId) async {
