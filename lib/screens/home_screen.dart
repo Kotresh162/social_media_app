@@ -4,6 +4,14 @@ import 'package:social_media_app/api/app_service.dart';
 import 'package:social_media_app/models/post_model.dart';
 import 'package:social_media_app/screens/post_screen.dart';
 
+class MainController extends GetxController {
+  var selectedIndex = 0.obs;
+
+  void changeIndex(int index) {
+    selectedIndex.value = index;
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -14,6 +22,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> posts = [];
   final ApiService apiService = ApiService();
+
+  final MainController controller = Get.put(MainController());
 
   @override
   void initState() {
@@ -76,6 +86,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: Obx(() => BottomNavigationBar(
+            currentIndex: controller.selectedIndex.value,
+            onTap: controller.changeIndex,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+            ],
+          )),
     );
   }
 
@@ -97,62 +115,61 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPostCard(PostModel post) {
-  return Card(
-    margin: const EdgeInsets.all(20),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          leading: const CircleAvatar(
-            backgroundColor: Colors.blue,
-            child: Icon(Icons.person, color: Colors.white),
+    return Card(
+      margin: const EdgeInsets.all(20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.person, color: Colors.white),
+            ),
+            title: Text('User ${post.id}'),
+            subtitle: const Text('2 hours ago'),
+            trailing: const Icon(Icons.more_vert),
           ),
-          title: Text('User ${post.albumId}'),
-          subtitle: const Text('2 hours ago'),
-          trailing: const Icon(Icons.more_vert),
-        ),
-        // Handle image loading failure
-        Image.network(
-          post.imageUrl,
-          height: 250,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) {
-              return child; // Image loaded, show the image
-            } else {
+          // Handle image loading failure
+          Image.network(
+            post.imageUrl,
+            height: 250,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) {
+                return child; // Image loaded, show the image
+              } else {
+                return Container(
+                  color: Colors.grey, // Grey background for loading error
+                  height: 250,
+                  width: double.infinity,
+                  child: const Center(
+                    child: Icon(Icons.image, color: Colors.white), // Optional icon for visual feedback
+                  ),
+                );
+              }
+            },
+            errorBuilder: (context, error, stackTrace) {
               return Container(
-                color: Colors.grey, // Grey background for loading error
+                color: Colors.grey, // Grey background for error
                 height: 250,
                 width: double.infinity,
                 child: const Center(
                   child: Icon(Icons.image, color: Colors.white), // Optional icon for visual feedback
                 ),
               );
-            }
-          },
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.grey, // Grey background for error
-              height: 250,
-              width: double.infinity,
-              child: const Center(
-                child: Icon(Icons.image, color: Colors.white), // Optional icon for visual feedback
-              ),
-            );
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Text(
-            post.title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            },
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text(
+              post.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
